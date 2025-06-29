@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Random Identity Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 60px;
+    }
+    .card {
+      display: inline-block;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 30px;
+    }
+    .info {
+      font-size: 22px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Random Identity</h1>
+    <div class="info" id="fullname">Loading...</div>
+    <div class="info" id="gender"></div>
+    <div class="info" id="email"></div>
+  </div>
+
+  <script>
+    const baseRawUrl = "https://raw.githubusercontent.com/Charfeddine0/names/main/";
+
+    async function loadFile(filename) {
+      const res = await fetch(baseRawUrl + filename);
+      if (!res.ok) throw new Error(`Failed to load ${filename}`);
+      const text = await res.text();
+      return text.trim().split("\n").map(line => line.trim());
+    }
+
+    function randomFrom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    async function generateRandomIdentity() {
+      try {
+        const maleNames = await loadFile("male.txt");
+        const femaleNames = await loadFile("female.txt");
+        const lastnames = await loadFile("lastnames.txt");
+        const emails = await loadFile("emails.txt");
+
+        const isMale = Math.random() < 0.5;
+        const firstname = isMale ? randomFrom(maleNames) : randomFrom(femaleNames);
+        const lastname = randomFrom(lastnames);
+        const gender = isMale ? "👦 Male" : "👧 Female";
+        const email = randomFrom(emails);
+
+        document.getElementById("fullname").textContent = `${firstname} ${lastname}`;
+        document.getElementById("gender").textContent = gender;
+        document.getElementById("email").textContent = email;
+      } catch (err) {
+        document.getElementById("fullname").textContent = "Error loading data";
+        console.error(err);
+      }
+    }
+
+    generateRandomIdentity();
+  </script>
+</body>
+</html>
