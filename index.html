@@ -13,63 +13,117 @@
     .card {
       display: inline-block;
       background: white;
-      padding: 30px;
+      padding: 30px 50px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      min-width: 320px;
     }
     h1 {
       margin-bottom: 30px;
     }
-    .info {
+    .info-label {
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 15px;
+      color: #555;
+    }
+    .info-value {
       font-size: 22px;
-      margin: 10px 0;
+      margin: 5px 0 15px 0;
+      color: #222;
     }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>Random Identity</h1>
-    <div class="info" id="fullname">Loading...</div>
-    <div class="info" id="gender"></div>
-    <div class="info" id="email"></div>
+
+    <div class="info-label">First Name:</div>
+    <div class="info-value" id="firstName">Loading...</div>
+
+    <div class="info-label">Last Name:</div>
+    <div class="info-value" id="lastName">Loading...</div>
+
+    <div class="info-label">Gender:</div>
+    <div class="info-value" id="gender">Loading...</div>
+
+    <div class="info-label">Email:</div>
+    <div class="info-value" id="email">Loading...</div>
   </div>
 
   <script>
+    // رابط ملفات البيانات الخام على GitHub (raw)
     const baseRawUrl = "https://raw.githubusercontent.com/Charfeddine0/names/main/";
 
+    /**
+     * تحميل ملف نصي من GitHub وتقسيمه إلى مصفوفة أسطر
+     * @param {string} filename اسم الملف
+     * @returns {Promise<string[]>} مصفوفة الأسطر
+     */
     async function loadFile(filename) {
-      const res = await fetch(baseRawUrl + filename);
-      if (!res.ok) throw new Error(`Failed to load ${filename}`);
-      const text = await res.text();
+      const response = await fetch(baseRawUrl + filename);
+      if (!response.ok) {
+        throw new Error(`Failed to load ${filename}`);
+      }
+      const text = await response.text();
+      // تقسيم النص حسب الأسطر مع إزالة الفراغات من كل سطر
       return text.trim().split("\n").map(line => line.trim());
     }
 
-    function randomFrom(arr) {
-      return arr[Math.floor(Math.random() * arr.length)];
+    /**
+     * إرجاع عنصر عشوائي من مصفوفة
+     * @param {Array} array المصفوفة
+     * @returns {any} عنصر عشوائي
+     */
+    function getRandomItem(array) {
+      const index = Math.floor(Math.random() * array.length);
+      return array[index];
     }
 
+    /**
+     * توليد هوية عشوائية: اسم، لقب، جنس، إيميل
+     * يقرأ البيانات من ملفات النصوص في GitHub
+     */
     async function generateRandomIdentity() {
       try {
-        const maleNames = await loadFile("male.txt");
-        const femaleNames = await loadFile("female.txt");
-        const lastnames = await loadFile("lastnames.txt");
-        const emails = await loadFile("emails.txt");
+        // تحميل البيانات من الملفات
+        const maleNames = await loadFile("male.txt");        // أسماء الذكور
+        const femaleNames = await loadFile("female.txt");    // أسماء الإناث
+        const lastNames = await loadFile("lastnames.txt");   // الألقاب
+        const emails = await loadFile("emails.txt");         // الإيميلات
 
+        // تحديد الجنس عشوائياً (50% ذكر، 50% أنثى)
         const isMale = Math.random() < 0.5;
-        const firstname = isMale ? randomFrom(maleNames) : randomFrom(femaleNames);
-        const lastname = randomFrom(lastnames);
-        const gender = isMale ? "👦 Male" : "👧 Female";
-        const email = randomFrom(emails);
 
-        document.getElementById("fullname").textContent = `${firstname} ${lastname}`;
-        document.getElementById("gender").textContent = gender;
+        // اختيار الاسم حسب الجنس
+        const firstName = isMale ? getRandomItem(maleNames) : getRandomItem(femaleNames);
+
+        // اختيار لقب عشوائي
+        const lastName = getRandomItem(lastNames);
+
+        // تحديد نص الجنس لعرضه
+        const genderText = isMale ? "👦 Male" : "👧 Female";
+
+        // اختيار إيميل عشوائي من قائمة الإيميلات
+        const email = getRandomItem(emails);
+
+        // عرض النتائج في الصفحة
+        document.getElementById("firstName").textContent = firstName;
+        document.getElementById("lastName").textContent = lastName;
+        document.getElementById("gender").textContent = genderText;
         document.getElementById("email").textContent = email;
-      } catch (err) {
-        document.getElementById("fullname").textContent = "Error loading data";
-        console.error(err);
+
+      } catch (error) {
+        // في حال وجود خطأ، إظهار رسالة بدلاً من البيانات
+        document.getElementById("firstName").textContent = "Error loading data";
+        document.getElementById("lastName").textContent = "";
+        document.getElementById("gender").textContent = "";
+        document.getElementById("email").textContent = "";
+        console.error(error);
       }
     }
 
+    // عند تحميل الصفحة، نفذ الدالة
     generateRandomIdentity();
   </script>
 </body>
